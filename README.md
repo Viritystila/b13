@@ -1,2 +1,2 @@
 # b13
-Testing the ne LWLJG3 -base Viritystone
+Testing the ne LWLJGL3 -based Viritystone
