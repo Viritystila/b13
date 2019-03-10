@@ -124,10 +124,10 @@
                                         ;Collection of points
 (def pointBuffer (buffer (* 5 10)))
 (buffer-write! pointBuffer [0 0 0 0 0 0 0 0 0 0
-                            1 100 400 30 1 1 1 1 1 1
-                            1 200 300 30 1 1 1 1 1 1
-                            1 300 200 30 1 1 1 1 1 1
-                            1 400 100 30 1 1 1 1 1 1])
+                            1 100 40 30 1 0.01 0.3 0.99 0.01 1
+                            1 150 30 30 1 0.01 0.3 0.99 0.01 1
+                            1 175 20 30 1 0.01 0.3 0.99 0.01 1
+                            1 200 10 30 1 0.01 0.3 0.99 0.01 1])
 
 
 (def playBuffer (buffer 32))
@@ -187,20 +187,6 @@
 
 (control-bus-get mcbus1)
 
-(defonce lp (atom true))
-(defonce b1stcntr (atom 0))
-(reset! lp true)
-
-(def monitor-loop (future (while @lp (do (reset! b1stcntr (control-bus-get b4th_beat-cnt-bus)) (Thread/sleep 1)))))
-
-(add-watch b1stcntr :b1 (fn [_ _ old new] (let [;cnt (int (first (take-last 1 new)))
-                                               cnt (int (first (take 1 new)))
-                                               gate (int (buffer-get buffer-64-1 (mod cnt 64)))
-                                               freq 100]
-                                           (control-bus-set! mcbus1 gate 0)
-                                           (println "new" cnt gate)
-                                           )))
-
 (stop)
                                         ;Synths
   (defsynth mcsynth
@@ -229,12 +215,16 @@
           freq1 (select:kr 1 control_in)
           freq2 (select:kr 2 control_in)
           freq3 (select:kr 3 control_in)
+          a     (select:kr 5 control_in)
+          d     (select:kr 6 control_in)
+          s     (select:kr 7 control_in)
+          r     (select:kr 8 control_in)
           gate       (select:kr 0 control_in)
           adj        (max 1 gate)
           osc-bank-1 [(saw freq1) (sin-osc freq1) (pulse freq1)]
           osc-bank-2 [(saw freq2) (sin-osc freq2) (pulse freq2)]
           osc-bank-3 [(saw freq3) (sin-osc freq3) (pulse freq3)]
-          amp-env    (env-gen (adsr attack decay sustain release) :gate gate)
+          amp-env    (env-gen (adsr a d s r) :gate gate)
           ctrl-amp-env    (env-gen:kr (adsr attack decay sustain release) :gate gate)
           f-env      (env-gen (adsr fattack fdecay fsustain frelease) :gate gate)
           ctrl-f-env (a2k amp-env)
@@ -250,7 +240,7 @@
 
     )
 
-(ctl mcs1 :amp 4)
+(ctl mcs1 :amp 4 :osc1 0)
 
 (control-bus-set! mcbus1 0 0)
 
@@ -260,8 +250,5 @@
 
 (stop)
 
-(defsynth aaa [] (out 0 (sin-osc 100)))
-
-(def aaaa (aaa))
 
 (kill mcs1)
