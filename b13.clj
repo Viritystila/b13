@@ -1,5 +1,6 @@
 (ns b13 (:use [overtone.live]) (:require [viritystone.tone :as t]) )
 
+
 (do
   (defn note->hz [music-note]
     (midi->hz (note music-note)))
@@ -102,17 +103,19 @@
 
   (do (defonce cbus1 (control-bus 1)))
 
+
+  (do (defonce pointLength 10))
   )
 
                                         ;buffers
-(buffer-write! buffer-64-1 [ 2 0 2 0 2 0 2 0
-                             2 0 0 0 0 0 0 0
-                             2 0 0 0 0 0 0 0
-                             2 0 0 0 2 0 0 0
-                             2 0 0 0 0 0 0 0
-                             2 0 0 0 0 0 0 0
-                             2 0 0 0 0 0 0 0
-                             2 0 0 0 0 0 0 0])
+(buffer-write! buffer-64-1 [ 4 0 3 0 2 0 2 0
+                             2 0 2 0 1 0 1 0
+                             2 0 3 0 3 0 1 0
+                             2 0 1 0 2 0 1 0
+                             2 0 1 0 1 0 1 0
+                             2 0 3 0 3 0 3 0
+                             4 0 4 0 3 0 4 0
+                             2 0 3 0 4 0 4 0])
 
 (buffer-get buffer-64-1 63)
 
@@ -122,12 +125,12 @@
 ; p=[gate, f1, f2, f3, f4, a, d, s, r, amp]
 
                                         ;Collection of points
-(def pointBuffer (buffer (* 5 10)))
+(def pointBuffer (buffer (* 5 pointLength)))
 (buffer-write! pointBuffer [0 0 0 0 0 0 0 0 0 0
-                            1 100 40 30 1 0.01 0.3 0.99 0.01 1
-                            1 150 30 30 1 0.01 0.3 0.99 0.01 1
-                            1 175 20 30 1 0.01 0.3 0.99 0.01 1
-                            1 200 10 30 1 0.01 0.3 0.99 0.01 1])
+                            1 (nth (map note->hz (chord :C1 :minor)) 0) 40 30 1 0.01 0.3 0.99 0.01 1
+                            1 (nth (map note->hz (chord :C2 :minor)) 0) 30 30 1 0.01 0.3 0.99 0.01 1
+                            1 (nth (map note->hz (chord :C3 :minor)) 0) 20 30 1 0.01 0.3 0.99 0.01 1
+                            1 (nth (map note->hz (chord :C4 :minor)) 0) 10 30 1 0.01 0.3 0.99 0.01 1])
 
 
 (def playBuffer (buffer 32))
@@ -136,7 +139,10 @@
                            2 2 2 2 2 2 2 2
                            0 0 0 0 2 2 2 2 ])
 
+(note->hz :C1)
+(map note->hz (chord :C1 :minor))
 
+a= [1 2 3 (map note->hz (chord :C1 :minor))]
                                         ;readers
 
 
@@ -181,7 +187,7 @@
 
 (def br (playReader :play-buf playBuffer :point-buf pointBuffer :in-bus-ctr b4th_beat-cnt-bus :outbus mcbus1))
 
-(ctl br :beat-buf (makeBuffer generalInput))
+(ctl br :point-buf pointBuffer :play-buf buffer-64-1)
 
 (kill br)
 
