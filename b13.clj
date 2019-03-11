@@ -109,15 +109,15 @@
 
                                         ;buffers
 (buffer-write! buffer-64-1 [ 4 0 3 0 2 0 2 0
-                             2 0 2 0 1 0 1 0
-                             2 0 3 0 3 0 1 0
-                             2 0 1 0 2 0 1 0
-                             2 0 1 0 1 0 1 0
-                             2 0 3 0 3 0 3 0
-                             4 0 4 0 3 0 4 0
-                             2 0 3 0 4 0 4 0])
+                             2 0 0 0 2 0 0 0
+                             1 0 3 0 0 0 4 0
+                             3 0 0 0 4 0 0 0
+                             1 0 0 0 2 0 0 0
+                             3 0 1 0 1 0 0 0
+                             4 0 0 0 2 2 2 2
+                             2 2 2 1 4 3 4 3])
 
-(buffer-get buffer-64-1 63)
+(buffer-data buffer-64-1)
 
 
 
@@ -133,36 +133,91 @@
                             1 (nth (map note->hz (chord :C4 :minor)) 0) 10 30 1 0.01 0.3 0.99 0.01 1])
 
 
-(def playBuffer (buffer 32))
-(buffer-write! playBuffer [1 1 1 1 3 3 3 3
-                           4 4 4 4 3 3 3 3
-                           2 2 2 2 2 2 2 2
-                           0 0 0 0 2 2 2 2 ])
+(def playBuffer (buffer 128))
+(buffer-write! playBuffer [1 0 2 0 3 0 4 0
+                           1 0 2 0 2 0 4 0
+                           1 0 2 0 3 0 4 0
+                           1 0 1 0 1 0 1 0
+                           1 0 1 0 1 0 1 0
+                           1 0 2 0 3 0 4 0
+                           1 0 2 0 3 0 4 0
+                           2 0 2 0 2 0 2 0
+                           2 0 2 0 2 0 2 0
+                           2 0 2 0 2 0 2 0
+                           1 0 1 0 1 0 1 0
+                           1 0 1 0 1 0 1 0
+                           1 0 2 0 3 0 4 0
+                           2 0 2 0 2 0 2 0
+                           2 0 2 0 2 0 2 0
+                           2 0 2 0 2 0 2 0])
 
 (note->hz :C1)
 (map note->hz (chord :C1 :minor))
+ [1 2 3 (map note->hz (chord :C1 :7sus2))]
 
-a= [1 2 3 (map note->hz (chord :C1 :minor))]
+
+                                        ;buffer modifiers
+
+(defn writeBuffer [buffer value-array] (buffer-write! buffer value-array) value-array)
+
+(def modValArray (writeBuffer pointBuffer  [0 0 0 0 0 0 0 0 0 0
+                             1 (nth (map note->hz (chord :A1 :minor)) 0) 40 30 1 0.01 0.3 0.99 0.01 1
+                             1 (nth (map note->hz (chord :B2 :minor)) 0) 30 30 1 0.01 0.3 0.99 0.01 1
+                             1 (nth (map note->hz (chord :C3 :minor)) 0) 20 30 1 0.01 0.3 0.99 0.01 1
+                             1 (nth (map note->hz (chord :D4 :minor)) 0) 10 30 1 0.01 0.3 0.99 0.01 1] ))
+
+
+(defn setChords [value-array note chordval point] (let [values          10
+                                                        chrd            (chord note chordval)
+                                                        freqs           (vec (map  note->hz chrd))
+                                                        maxChordLength  (min (count freqs) 4)
+                                                        freqs           (into [] (subvec freqs 0 maxChordLength))
+                                                        base-indices    (range (count freqs))
+                                                        base-indices    (map + base-indices (repeat maxChordLength (+ 1 (* values point))))]
+                                                    (apply assoc value-array (interleave base-indices  freqs ))))
+
+
+(def modValArray (writeBuffer pointBuffer  (setChords modValArray :F1 :7sus4 2)))
+
+(defn setADSR [value-array a d s r point] (let [values          10
+                                                adsr            [a d s r]
+                                                base-indices    (range 4)
+                                                base-indices    (map + base-indices (repeat 4 (+ 5 (* values point))))]
+                                                    (apply assoc value-array (interleave base-indices  adsr ))))
+
+(def modValArray (writeBuffer pointBuffer (setADSR modValArray 0.01 0.3 0.99 0.01 3)))
+
+
+(defn setAmp [value-array amp point] (let [values          10 ]
+                                         (assoc value-array (+ 9 (* values point)) amp)))
+
+(def modValArray (writeBuffer pointBuffer (setAmp modValArray 1 3)))
+
+(defn setPoint [value-array point-array point] (let [values       10
+                                                     point-array  (into [] (subvec point-array 0 values))
+                                                     base-indices (range 10)
+                                                     base-indices (map + base-indices (repeat 10 (* values point)))]
+                                                 (apply assoc value-array (interleave base-indices point-array))))
+
+
+modValArray
+
+
+(defn makeBuffer [points ] (let [values      10
+                                 buff        (buffer (* points values))
+                                 value-array (into [] (repeat (* points values) 0 ))]
+                             (buffer-write! buff value-array)
+                             value-array))
+
+(def pointbuf2 (makeBuffer 10))
+
+pointbuf2
+(def modValArray (writeBuffer pointBuffer (setPoint modValArray [1 200 334 455 576 0.01 0.3 0.99 0.01 1] 3)))
+
+modValArray
+
+(stop)
                                         ;readers
-
-
-(defn makeBuffer [{:keys [input] :as all}] (let [length        (count (:gate all))
-                                                 channels      (count all)
-                                                 gate          (:gate all)
-                                                 freq          (:freq all)
-                                                 a             (:a all)
-                                                 d             (:d all)
-                                                 s             (:s all)
-                                                 r             (:r all)
-                                                 buff (buffer  length channels)]
-                                             (buffer-write! buff (* 0 length) gate)
-                                             ;(buffer-set! buff   (* 1 length)  0)
-                                             ;(buffer-write! buff (* 2 length) a)
-                                             ;(buffer-write! buff (* 3 length) d)
-                                             ;(buffer-write! buff (* 4 length) s)
-                                             ;(buffer-write! buff (* 5 length) r)
-                                             buff
-                                             ))
 
 (defsynth playReader [play-buf 0
                       point-buf 0
@@ -187,7 +242,9 @@ a= [1 2 3 (map note->hz (chord :C1 :minor))]
 
 (def br (playReader :play-buf playBuffer :point-buf pointBuffer :in-bus-ctr b4th_beat-cnt-bus :outbus mcbus1))
 
-(ctl br :point-buf pointBuffer :play-buf buffer-64-1)
+(ctl br :point-buf pointBuffer :play-buf buffer-64-1 :in-bus-ctr b4th_beat-cnt-bus)
+
+(ctl br :point-buf pointBuffer :play-buf playBuffer)
 
 (kill br)
 
@@ -242,11 +299,11 @@ a= [1 2 3 (map note->hz (chord :C1 :minor))]
       (out 0 (pan2 (* amp amp-env filt)))))
 
 (do (kill mcs1)
-    (def mcs1 (mcsynth :control-bus mcbus1))
+    (def mcs1 (mcsynth [:tail early-g]  :control-bus mcbus1 :amp 2 :osc1 0))
 
     )
 
-(ctl mcs1 :amp 4 :osc1 0)
+(ctl mcs1 :amp 2 :osc1 0)
 
 (control-bus-set! mcbus1 0 0)
 
