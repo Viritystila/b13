@@ -167,11 +167,11 @@
 ; p=[gate, f1, f2, f3, f4, a, d, s, r, amp]
                                         ;Collection of points
 (def pointBuffer (buffer (* 5 pointLength)))
-(buffer-write! pointBuffer [0 0 0 0 0 0 0 0 0 0
-                            1 (nth (map note->hz (chord :C1 :minor)) 0) 40 30 1 0.01 0.3 0.99 0.01 1
-                            1 (nth (map note->hz (chord :C2 :minor)) 0) 30 30 1 0.01 0.3 0.99 0.01 1
-                            1 (nth (map note->hz (chord :C3 :minor)) 0) 20 30 1 0.01 0.3 0.99 0.01 1
-                            1 (nth (map note->hz (chord :C4 :minor)) 0) 10 30 1 0.01 0.3 0.99 0.01 1])
+(def modValArray (writeBuffer pointBuffer (flatten [0 0 0 0 0 0 0 0 0 0
+                                                      1 (into [] (map note->hz (chord :C3 :minor))) 1 0.01 0.3 0.99 0.01 1
+                                                      1 (into [] (map note->hz (chord :D3 :minor))) 1 0.01 0.3 0.99 0.01 1
+                                                      1 (into [] (map note->hz (chord :G3 :minor))) 1 0.01 0.3 0.99 0.01 1
+                                                      1 (into [] (map note->hz (chord :Bb3 :minor))) 1 0.01 0.3 0.99 0.01 1])))
 
 
 (def playBuffer (buffer 128))
@@ -194,12 +194,6 @@
 
 
                                         ;buffer modifiers
-
-(def modValArray (writeBuffer pointBuffer  [0 0 0 0 0 0 0 0 0 0
-                             1 (nth (map note->hz (chord :E1 :minor)) 0) 40 30 1 0.01 0.3 0.99 0.01 1
-                             1 (nth (map note->hz (chord :B2 :minor)) 0) 30 30 1 0.01 0.3 0.99 0.01 1
-                             1 (nth (map note->hz (chord :C3 :minor)) 0) 20 30 1 0.01 0.3 0.99 0.01 1
-                             1 (nth (map note->hz (chord :D4 :minor)) 0) 10 30 1 0.01 0.3 0.99 0.01 1] ))
 
 
 (def modValArray (writeBuffer pointBuffer  (setChords modValArray :E#2 :minor 1)))
@@ -235,15 +229,13 @@
           ]
       (out:kr outbus [gate f1 f2 f3 f4 a d s r amp])))
 
-(def br (playReader :play-buf playBuffer :point-buf pointBuffer :in-bus-ctr b4th_beat-cnt-bus :outbus mcbus1))
+(def mcsr (playReader :play-buf playBuffer :point-buf pointBuffer :in-bus-ctr b4th_beat-cnt-bus :outbus mcbus1))
 
-(ctl br :point-buf pointBuffer :play-buf buffer-64-1 :in-bus-ctr b4th_beat-cnt-bus)
+(ctl mcsr :point-buf pointBuffer :play-buf buffer-64-1 :in-bus-ctr b4th_beat-cnt-bus)
 
-(ctl br :point-buf pointBuffer :play-buf playBuffer)
+(ctl mcsr :point-buf pointBuffer :play-buf playBuffer)
 
-(kill br)
-
-(control-bus-get mcbus1)
+(kill mcsr)
 
 (stop)
                                         ;Synths
@@ -301,6 +293,34 @@
 
     )
 
-(ctl mcs1 :amp 1 :osc1 2 :osc2 0 :cutoff 400)
+(ctl mcs1 :amp 2 :osc1 2 :osc2 0 :cutoff 400)
 
 (kill mcs1)
+
+
+                                        ;overpad
+(definst overpad
+  [control-bus 0 note 30 amp 0.7 attack 0.001 release 2]
+  (let [gate  (select:kr 0 control_in)
+        freq  (select:kr 1 control_in)
+        a     (select:kr 5 control_in)
+        d     (select:kr 6 control_in)
+        s     (select:kr 7 control_in)
+        r     (select:kr 8 control_in)
+        noise (white-noise)
+        ;env   (env-gen (perc attack release) :action FREE)
+        env    (env-gen (adsr a d s r) :gate gate)
+        f-env (+ freq (* 3 freq (env-gen (perc 0.012 (- release 0.1)))))
+        bfreq (/ freq 2)
+        sig   (apply +
+                     (concat (* 0.7 (saw [bfreq (* 0.99 bfreq)]))
+                             (lpf (saw [freq (* noise freq 1.01)]) f-env)))
+        audio (* amp env sig)
+        ]
+    audio))
+
+(def op (overpad :note 100 :attack 0.1 :release 5))
+
+
+(ctl op :note 100 :amp 0.1)
+(kill op)
