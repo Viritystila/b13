@@ -396,6 +396,7 @@
           d     (select:kr 6 control_in)
           s     (select:kr 7 control_in)
           r     (select:kr 8 control_in)
+          pls   gate
           adj       (max 1 pls)
           co-env    (perc v1 d1 f1 c1)
           a-env     (perc v2 d2 adj c2)
@@ -408,3 +409,10 @@
           output    (*  amp (+ cutoff sound) env)
           output    (free-verb output 0.1 0.3 0.1)]
       (out outbus (pan2 (* amp_output (clip:ar output clipVal))))))
+
+
+(def k1 (kick :control-bus mcbus1))
+
+(ctl k1 :amp 10)
+
+(stop)
