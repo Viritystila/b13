@@ -129,6 +129,7 @@
 
   (do
     (defonce mcbus1 (control-bus 10))
+    (defonce mcbus2 (control-bus 10))
     )
 
   (do
@@ -137,6 +138,12 @@
     )
 
   (do (defonce cbus1 (control-bus 1)))
+
+  (do (defonce vcbus1 (control-bus 1))
+      (defonce vcbus2 (control-bus 1))
+      (defonce vcbus3 (control-bus 1))
+      (defonce vcbus4 (control-bus 1))
+      )
 
 
   (do (defonce pointLength 10))
@@ -168,10 +175,10 @@
                                         ;Collection of points
 (def pointBuffer (buffer (* 5 pointLength)))
 (def modValArray (writeBuffer pointBuffer (flatten [0 0 0 0 0 0 0 0 0 0
-                                                      1 (into [] (map note->hz (chord :C3 :minor))) 1 0.01 0.3 0.99 0.01 1
-                                                      1 (into [] (map note->hz (chord :D3 :minor))) 1 0.01 0.3 0.99 0.01 1
-                                                      1 (into [] (map note->hz (chord :G3 :minor))) 1 0.01 0.3 0.99 0.01 1
-                                                      1 (into [] (map note->hz (chord :Bb3 :minor))) 1 0.01 0.3 0.99 0.01 1])))
+                                                    1 (into [] (map note->hz (chord :C3 :minor))) 1 0.01 0.3 0.99 0.01 1
+                                                    1 (into [] (map note->hz (chord :D3 :minor))) 1 0.01 0.3 0.99 0.01 1
+                                                    1 (into [] (map note->hz (chord :G3 :minor))) 1 0.01 0.3 0.99 0.01 1
+                                                    1 (into [] (map note->hz (chord :Bb3 :minor))) 1 0.01 0.3 0.99 0.01 1])))
 
 
 (def playBuffer (buffer 128))
@@ -192,6 +199,24 @@
                            2 0 2 0 2 0 2 0
                            4 0 3 0 4 0 3 0])
 
+
+(def playBuffer_ops (buffer 128))
+(buffer-write! playBuffer_ops [4 4 4 4 4 4 4 4
+                               4 4 4 4 4 4 4 4
+                               4 4 4 4 4 4 4 4
+                               4 4 4 4 4 4 4 4
+                               4 4 4 4 4 4 4 4
+                               4 4 4 4 4 4 4 4
+                               3 3 3 3 3 3 3 3
+                               3 3 3 3 3 3 3 3
+                               2 2 2 2 2 2 2 2
+                               2 2 2 2 2 2 2 2
+                               2 2 2 2 2 2 2 2
+                               2 2 2 2 2 2 2 2
+                               2 2 2 2 2 2 2 2
+                               2 2 2 2 2 2 2 2
+                               2 2 2 2 2 2 2 2
+                               4 4 4 4 4 4 4 4])
 
                                         ;buffer modifiers
 
@@ -229,6 +254,8 @@
           ]
       (out:kr outbus [gate f1 f2 f3 f4 a d s r amp])))
 
+
+                                        ; reader for mcsynth
 (def mcsr (playReader :play-buf playBuffer :point-buf pointBuffer :in-bus-ctr b4th_beat-cnt-bus :outbus mcbus1))
 
 (ctl mcsr :point-buf pointBuffer :play-buf buffer-64-1 :in-bus-ctr b4th_beat-cnt-bus)
@@ -236,6 +263,12 @@
 (ctl mcsr :point-buf pointBuffer :play-buf playBuffer)
 
 (kill mcsr)
+
+                                        ;reader for overpad
+(def opsr (playReader :play-buf playBuffer :point-buf pointBuffer :in-bus-ctr b32th_beat-cnt-bus :outbus mcbus2))
+
+(ctl opsr :play-buf playBuffer_ops :in-bus-ctr b32th_beat-cnt-bus)
+
 
 (stop)
                                         ;Synths
@@ -300,17 +333,17 @@
 
                                         ;overpad
 (definst overpad
-  [control-bus 0 note 30 amp 0.7 attack 0.001 release 2]
-  (let [gate  (select:kr 0 control_in)
+  [control-bus 0 note 30 amp 0.5]
+  (let [control_in   (in:kr control-bus 10)
+        gate  (select:kr 0 control_in)
         freq  (select:kr 1 control_in)
         a     (select:kr 5 control_in)
         d     (select:kr 6 control_in)
         s     (select:kr 7 control_in)
         r     (select:kr 8 control_in)
         noise (white-noise)
-        ;env   (env-gen (perc attack release) :action FREE)
         env    (env-gen (adsr a d s r) :gate gate)
-        f-env (+ freq (* 3 freq (env-gen (perc 0.012 (- release 0.1)))))
+        f-env (+ freq (* 30 freq (env-gen (perc 0.012 (- r 0.1)))))
         bfreq (/ freq 2)
         sig   (apply +
                      (concat (* 0.7 (saw [bfreq (* 0.99 bfreq)]))
@@ -319,8 +352,59 @@
         ]
     audio))
 
-(def op (overpad :note 100 :attack 0.1 :release 5))
+(do (kill op)
+    (def op (overpad  [:tail early-g] :control-bus mcbus2 ))
+
+    )
 
 
-(ctl op :note 100 :amp 0.1)
+(ctl op :amp 0.4)
 (kill op)
+
+(control-bus-get mcbus2)
+
+(pp-node-tree)
+
+
+
+(pp-node-tree)
+
+                                        ;Kick
+(defsynth kick [freq 80
+                amp 1
+                amp_output 1
+                v1 0.001
+                v2 0.001
+                v3 0.001
+                c1 -20
+                c2 -8
+                c3 -8
+                d1 1
+                d2 1
+                d3 1
+                f1 80
+                f2 1
+                f3 80
+                clipVal 0.3
+                control-bus 0
+                video-control-bus 0
+                outbus 0]
+    (let [control_in   (in:kr control-bus 10)
+          gate  (select:kr 0 control_in)
+          freq  (select:kr 1 control_in)
+          a     (select:kr 5 control_in)
+          d     (select:kr 6 control_in)
+          s     (select:kr 7 control_in)
+          r     (select:kr 8 control_in)
+          adj       (max 1 pls)
+          co-env    (perc v1 d1 f1 c1)
+          a-env     (perc v2 d2 adj c2)
+          osc-env   (perc v3 d3 f3 c3)
+          cutoff    (lpf (pink-noise) (+ (env-gen co-env :gate pls) (* 1 20)))
+          sound     (lpf (sin-osc (+ 0 (env-gen osc-env :gate pls) 20)) (* 200 1))
+          env       (env-gen a-env :gate pls)
+          venv      (env-gen:kr a-env :gate pls)
+          _         (out:kr video-control-bus venv)
+          output    (*  amp (+ cutoff sound) env)
+          output    (free-verb output 0.1 0.3 0.1)]
+      (out outbus (pan2 (* amp_output (clip:ar output clipVal))))))
