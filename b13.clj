@@ -6,7 +6,8 @@
     (defn note->hz [music-note]
       (midi->hz (note music-note)))
 
-    (defn writeBuffer [buffer value-array] (buffer-write! buffer value-array) value-array)
+    (defn writeBuffer [buffer value-array] (let [va  (into [] (flatten value-array))]
+                                             (buffer-write! buffer va) va))
 
     (defn setChords [value-array note chordval point] (let [values          10
                                                             chrd            (chord note chordval)
@@ -14,7 +15,7 @@
                                                             maxChordLength  (min (count freqs) 4)
                                                             freqs           (into [] (subvec freqs 0 maxChordLength))
                                                             base-indices    (range (count freqs))
-                                                            base-indices    (map + base-indices (repeat maxChordLength (+ 1 (* values point))))]
+                                                            base-indices    (into [] (map + base-indices (repeat maxChordLength (+ 1 (* values point)))))]
                                                         (apply assoc value-array (interleave base-indices  freqs ))))
 
      (defn setADSR [value-array a d s r point] (let [values          10
@@ -218,7 +219,12 @@
                                2 2 2 2 2 2 2 2
                                4 4 4 4 4 4 4 4])
 
+
                                         ;buffer modifiers
+
+ (setChords modValArray :E#2 :minor 0)
+
+(type modValArray)
 
 
 (def modValArray (writeBuffer pointBuffer  (setChords modValArray :E#2 :minor 1)))
@@ -413,6 +419,6 @@
 
 (def k1 (kick :control-bus mcbus1))
 
-(ctl k1 :amp 10)
+(ctl k1 :amp 1)
 
 (stop)
