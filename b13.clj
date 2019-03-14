@@ -131,6 +131,7 @@
   (do
     (defonce mcbus1 (control-bus 10))
     (defonce mcbus2 (control-bus 10))
+    (defonce mcbus3 (control-bus 10))
     )
 
   (do
@@ -219,10 +220,26 @@
                                2 2 2 2 2 2 2 2
                                4 4 4 4 4 4 4 4])
 
+(def playBuffer_kick (buffer 128))
+(buffer-write! playBuffer_kick [1 0 0 0 1 0 0 0
+                               1 0 0 0 1 0 0 0
+                               1 0 0 0 1 0 0 0
+                               1 0 0 0 1 0 0 0
+                               1 0 0 0 1 0 0 0
+                               1 0 0 0 1 0 0 0
+                               1 0 0 0 1 0 0 0
+                               1 0 0 0 1 0 0 0
+                               1 0 0 0 1 0 0 0
+                               1 0 0 0 1 0 0 0
+                               1 0 0 0 1 0 0 0
+                               1 0 0 0 1 0 0 0
+                               1 0 0 0 1 0 0 0
+                               1 0 0 0 1 0 0 0
+                               1 0 0 0 1 0 0 0
+                               1 0 0 0 1 0 0 0])
+
 
                                         ;buffer modifiers
-
- (setChords modValArray :E#2 :minor 0)
 
 (type modValArray)
 
@@ -266,14 +283,21 @@
 
 (ctl mcsr :point-buf pointBuffer :play-buf buffer-64-1 :in-bus-ctr b4th_beat-cnt-bus)
 
-(ctl mcsr :point-buf pointBuffer :play-buf playBuffer)
+(ctl mcsr :point-buf pointBuffer :play-buf playBuffer :in-bus-ctr b4th_beat-cnt-bus)
 
 (kill mcsr)
 
                                         ;reader for overpad
-(def opsr (playReader :play-buf playBuffer :point-buf pointBuffer :in-bus-ctr b32th_beat-cnt-bus :outbus mcbus2))
+(def opsr (playReader :play-buf playBuffer_ops :point-buf pointBuffer :in-bus-ctr b32th_beat-cnt-bus :outbus mcbus2))
 
 (ctl opsr :play-buf playBuffer_ops :in-bus-ctr b32th_beat-cnt-bus)
+
+(control-bus-set! master-rate-bus (* 2 36))
+
+
+                                        ;Reader for kick drum
+
+(def kickr (playReader :play-buf playBuffer_kick :point-buf pointBuffer :in-bus-ctr b4th_beat-cnt-bus :outbus mcbus3))
 
 
 (stop)
@@ -331,6 +355,8 @@
     (def mcs1 (mcsynth [:tail early-g]  :control-bus mcbus1 :amp 1 :osc1 2 :osc2 0))
 
     )
+
+(ctl root-trg)
 
 (ctl mcs1 :amp 2 :osc1 2 :osc2 0 :cutoff 400)
 
@@ -419,6 +445,6 @@
 
 (def k1 (kick :control-bus mcbus1))
 
-(ctl k1 :amp 1)
+(ctl k1 :amp 10 :control-bus mcbus3)
 
 (stop)
