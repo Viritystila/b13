@@ -515,3 +515,7 @@
   (t/set-video-fixed 1 :fw)
 
   )
+
+(t/toggle-recording "/dev/video1")
+
+(stop)
