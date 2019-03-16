@@ -238,11 +238,43 @@
                                1 0 0 0 1 0 0 0
                                1 0 0 0 1 0 0 0])
 
+(buffer-write! playBuffer_kick [1 0 0 0 0 0 0 0
+                               1 0 0 0 0 0 0 0
+                               1 0 0 0 0 0 0 0
+                               1 0 0 0 0 0 0 0
+                               1 0 0 0 0 0 0 0
+                               1 0 0 0 0 0 0 0
+                               1 0 0 0 0 0 0 0
+                               1 0 0 0 0 0 0 0
+                               1 0 0 0 0 0 0 0
+                               1 0 0 0 0 0 0 0
+                               1 0 0 0 0 0 0 0
+                               1 0 0 0 0 0 0 0
+                               1 0 0 0 0 0 0 0
+                               1 0 0 0 0 0 0 0
+                               1 0 0 0 0 0 0 0
+                               1 0 0 0 1 0 0 0])
+
+
+(buffer-write! playBuffer_kick [1 0 0 0 0 0 0 0
+                               0 0 0 0 0 0 0 0
+                               1 0 0 0 0 0 0 0
+                               0 0 0 0 0 0 0 0
+                               1 0 0 0 0 0 0 0
+                               0 0 0 0 0 0 0 0
+                               1 0 0 0 0 0 0 0
+                               0 0 0 0 0 0 0 0
+                               1 0 0 0 0 0 0 0
+                               0 0 0 0 0 0 0 0
+                               1 0 0 0 0 0 0 0
+                               0 0 0 0 0 0 0 0
+                               1 0 0 0 0 0 0 0
+                               0 0 0 0 0 0 0 0
+                               1 0 0 0 1 0 0 0
+                               0 0 1 0 1 0 0 0])
+
 
                                         ;buffer modifiers
-
-(type modValArray)
-
 
 (def modValArray (writeBuffer pointBuffer  (setChords modValArray :E#2 :minor 1)))
 
@@ -352,20 +384,17 @@
       (out 0 (pan2 (* amp amp-env filt)))))
 
 (do (kill mcs1)
-    (def mcs1 (mcsynth [:tail early-g]  :control-bus mcbus1 :amp 1 :osc1 2 :osc2 0))
+    (def mcs1 (mcsynth [:tail early-g]  :control-bus mcbus1 :amp 1 :osc1 2 :osc2 0 :ctrl-output vcbus1))
 
     )
 
 (ctl root-trg)
 
-(ctl mcs1 :amp 2 :osc1 2 :osc2 0 :cutoff 400)
+(ctl mcs1 :amp 2 :osc1 2 :osc2 0 :cutoff 400 :ctrl-output vcbus1)
 
-(kill mcs1)
-
-
-                                        ;overpad
+(kill mcs1)q                                        ;overpad
 (definst overpad
-  [control-bus 0 note 30 amp 0.5]
+  [control-bus 0 note 30 amp 0.5 outbus 0 ctrl-output 0]
   (let [control_in   (in:kr control-bus 10)
         gate  (select:kr 0 control_in)
         freq  (select:kr 1 control_in)
@@ -373,24 +402,26 @@
         d     (select:kr 6 control_in)
         s     (select:kr 7 control_in)
         r     (select:kr 8 control_in)
-        noise (white-noise)
+        noise (pink-noise)
         env    (env-gen (adsr a d s r) :gate gate)
         f-env (+ freq (* 30 freq (env-gen (perc 0.012 (- r 0.1)))))
         bfreq (/ freq 2)
-        sig   (apply +
+        sig   (apply +q
                      (concat (* 0.7 (saw [bfreq (* 0.99 bfreq)]))
                              (lpf (saw [freq (* noise freq 1.01)]) f-env)))
+        ctrl-out (a2k sig)
+        _        (out:kr ctrl-output ctrl-out)
         audio (* amp env sig)
         ]
-    audio))
+    (out outbus (pan2 audio))))
 
 (do (kill op)
-    (def op (overpad  [:tail early-g] :control-bus mcbus2 ))
+    (def op (overpad  [:tail early-g] :control-bus mcbus2 :ctrl-output vcbus2 ))
 
     )
 
 
-(ctl op :amp 0.4)
+(ctl op :amp 1)
 (kill op)
 
 (control-bus-get mcbus2)
@@ -431,20 +462,44 @@
           pls   gate
           adj       (max 1 pls)
           co-env    (perc v1 d1 f1 c1)
-          a-env     (perc v2 d2 adj c2)
+          a-env     (perc v2 d2 f2 c2)
           osc-env   (perc v3 d3 f3 c3)
           cutoff    (lpf (pink-noise) (+ (env-gen co-env :gate pls) (* 1 20)))
           sound     (lpf (sin-osc (+ 0 (env-gen osc-env :gate pls) 20)) (* 200 1))
           env       (env-gen a-env :gate pls)
-          venv      (env-gen:kr a-env :gate pls)
+          venv      (a2k env)
           _         (out:kr video-control-bus venv)
           output    (*  amp (+ cutoff sound) env)
           output    (free-verb output 0.1 0.3 0.1)]
       (out outbus (pan2 (* amp_output (clip:ar output clipVal))))))
 
 
-(def k1 (kick :control-bus mcbus1))
+(do (kill k1)
+    (def k1 (kick :control-bus mcbus3))
 
-(ctl k1 :amp 10 :control-bus mcbus3)
+    )
+
+(ctl k1 :amp 1 :control-bus mcbus3 :video-control-bus vcbus3
+     :v1 0.001 :v2 0.01 :v3 0.01
+     :d1 1 :d2 10 :d3 1
+     :f1 30 :f2 5 :f3 50
+     :c1 -20 :c2 -8 :c3 -8 )
 
 (stop)
+
+
+                                        ;Video
+(t/start "./b13.glsl" :width 1920 :height 1080 :cams [0 2] :videos ["../videos/tietoisku_1_fixed.mp4" "../videos/spede_fixed.mp4"  "../videos/vt2.mp4" "../videos/haps_fixed.mp4"])
+
+
+(defonce beat-cnt-bus-atom_1 (bus-monitor b1st_beat-cnt-bus))
+
+
+                                        ;indices 0-50 for control, indiced 51-100 for video selection
+
+(add-watch beat-cnt-bus-atom_1 :cnt (fn [_ _ old new]
+                                    (let [])
+                                      (t/set-dataArray-item 0 (+ (nth (control-bus-get vcbus1) 0) 0.01) )
+                                      ))
+
+(t/set-dataArray-item 51 0)
