@@ -489,7 +489,8 @@
 
 
                                         ;Video
-(t/start "./b13.glsl" :width 1920 :height 1080 :cams [0 2] :videos ["../videos/tietoisku_1_fixed.mp4" "../videos/spede_fixed.mp4"  "../videos/vt2.mp4" "../videos/haps_fixed.mp4"])
+(t/start "./b13.glsl" :width 1920 :height 1080 :cams [0 2] :videos ["../videos/tietoisku_1_fixed.mp4" "../videos/spede_fixed.mp4"  "../videos/vt2.mp4" "../videos/hapsiainen_fixed.mp4" "../videos/sormileikit.mp4"])
+
 
 
 (defonce beat-cnt-bus-atom_1 (bus-monitor b1st_beat-cnt-bus))
@@ -503,3 +504,14 @@
                                       ))
 
 (t/set-dataArray-item 51 0)
+
+
+(do
+                                        ;sepede 51000
+  (t/bufferSection 1 0 51000)
+
+  (t/set-active-buffer-video 1 0)
+
+  (t/set-video-fixed 1 :fw)
+
+  )
