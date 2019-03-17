@@ -313,7 +313,7 @@
                                         ; reader for mcsynth
 (def mcsr (playReader :play-buf playBuffer :point-buf pointBuffer :in-bus-ctr b4th_beat-cnt-bus :outbus mcbus1))
 
-(ctl mcsr :point-buf pointBuffer :play-buf buffer-64-1 :in-bus-ctr b4th_beat-cnt-bus)
+(ctl mcsr :point-buf pointBuffer :play-buf buffer-64-1 :in-bus-ctr b8th_beat-cnt-bus)
 
 (ctl mcsr :point-buf pointBuffer :play-buf playBuffer :in-bus-ctr b4th_beat-cnt-bus)
 
@@ -374,12 +374,14 @@
           f-env      (env-gen (adsr a d s r) :gate gate)
           f-env2     (env-gen:kr (adsr a d s r freq1 :gate gate))
           ctrl-f-env (a2k amp-env)
-          _          (out:kr ctrl-output (* ctrl-f-env))
+          ;_          (out:kr ctrl-output ctrl-f-env)
           s1         (* osc1-level (select osc1 osc-bank-1))
           s2         (* osc2-level (select osc2 osc-bank-2))
           s3         (* osc3-level (select osc3 osc-bank-3))
-          filt       (moog-ff (+ s1 s2 s3) (* cutoff f-env) 3)
+          filt       (moog-ff (+ s1 s2 s3) (* cutoff f-env2) 3)
           filt       (free-verb filt f-env2 1 1)
+          fout       (select:kr (= gate 0.0) [freq1 (in:kr ctrl-output)])
+          _          (out:kr ctrl-output fout)
           ]
       (out 0 (pan2 (* amp amp-env filt)))))
 
@@ -388,11 +390,16 @@
 
     )
 
+(control-bus-get vcbus1)
+
 (ctl root-trg)
 
-(ctl mcs1 :amp 2 :osc1 2 :osc2 0 :cutoff 400 :ctrl-output vcbus1)
+(ctl mcs1 :amp 1 :osc1 0 :osc2 2 :cutoff 500 :ctrl-output vcbus1)
 
-(kill mcs1)q                                        ;overpad
+(kill mcs1)
+
+(pp-node-tree)
+                                        ;overpad
 (definst overpad
   [control-bus 0 note 30 amp 0.5 outbus 0 ctrl-output 0]
   (let [control_in   (in:kr control-bus 10)
@@ -406,7 +413,7 @@
         env    (env-gen (adsr a d s r) :gate gate)
         f-env (+ freq (* 30 freq (env-gen (perc 0.012 (- r 0.1)))))
         bfreq (/ freq 2)
-        sig   (apply +q
+        sig   (apply +
                      (concat (* 0.7 (saw [bfreq (* 0.99 bfreq)]))
                              (lpf (saw [freq (* noise freq 1.01)]) f-env)))
         ctrl-out (a2k sig)
@@ -416,12 +423,12 @@
     (out outbus (pan2 audio))))
 
 (do (kill op)
-    (def op (overpad  [:tail early-g] :control-bus mcbus2 :ctrl-output vcbus2 ))
+    (def op (overpad  [:tail early-g] :control-bus mcbus2 :ctrl-output vcbus2 :amp 0.3))
 
     )
 
 
-(ctl op :amp 1)
+(ctl op :amp 0.3)
 (kill op)
 
 (control-bus-get mcbus2)
@@ -501,6 +508,11 @@
 (add-watch beat-cnt-bus-atom_1 :cnt (fn [_ _ old new]
                                     (let [])
                                       (t/set-dataArray-item 0 (+ (nth (control-bus-get vcbus1) 0) 0.01) )
+                                      (t/set-dataArray-item 1 (+ (nth (control-bus-get vcbus2) 0) 0.01) )
+                                      (t/set-dataArray-item 2 (+ (nth (control-bus-get vcbus3) 0) 0.01) )
+                                      ;(t/set-dataArray-item 0 (+ (nth (control-bus-get vcbus1) 0) 0.01) )
+                                      ;(t/set-dataArray-item 0 (+ (nth (control-bus-get vcbus1) 0) 0.01) )
+
                                       ))
 
 (t/set-dataArray-item 51 0)
@@ -517,5 +529,7 @@
   )
 
 (t/toggle-recording "/dev/video1")
+
+(t/stop)
 
 (stop)
