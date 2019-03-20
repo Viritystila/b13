@@ -152,14 +152,6 @@
   )
 
                                         ;buffers
-(buffer-write! buffer-64-1 [ 4 0 3 0 2 0 2 0
-                             2 0 0 0 2 0 0 0
-                             1 0 3 0 0 0 4 0
-                             3 0 0 0 4 0 0 0
-                             1 0 0 0 2 0 0 0
-                             3 0 1 0 1 0 0 0
-                             4 0 0 0 2 2 2 2
-                             2 2 2 2 4 3 4 3])
 
 
 (buffer-write! buffer-64-1 [ 4 4 4 4 4 4 4 4
@@ -177,10 +169,10 @@
                                         ;Collection of points
 (def pointBuffer (buffer (* 5 pointLength)))
 (def modValArray (writeBuffer pointBuffer (flatten [0 0 0 0 0 0 0 0 0 0
-                                                    1 (into [] (map note->hz (chord :C3 :minor))) 1 0.01 0.3 0.99 0.01 1
-                                                    1 (into [] (map note->hz (chord :D3 :minor))) 1 0.01 0.3 0.99 0.01 1
-                                                    1 (into [] (map note->hz (chord :G3 :minor))) 1 0.01 0.3 0.99 0.01 1
-                                                    1 (into [] (map note->hz (chord :Bb3 :minor))) 1 0.01 0.3 0.99 0.01 1])))
+                                                    1 (into [] (map note->hz (chord :C3 :minor))) 1 0.01 0.003 0.99 0.01 1
+                                                    1 (into [] (map note->hz (chord :D3 :minor))) 1 0.01 0.003 0.99 0.01 1
+                                                    1 (into [] (map note->hz (chord :G3 :minor))) 1 0.01 0.003 0.99 0.01 1
+                                                    1 (into [] (map note->hz (chord :Bb3 :minor))) 1 0.01 0.003 0.99 0.01 1])))
 
 
 (def playBuffer (buffer 128))
@@ -202,7 +194,25 @@
                            4 0 3 0 4 0 3 0])
 
 
+(buffer-write! playBuffer (flatten [[4 4 4 4 2 2 2 2
+                                     2 2 2 2 3 3 3 3
+                                     4 4 4 4 2 2 2 2
+                                     2 2 2 2 3 3 3 3
+                                     4 4 4 4 2 2 2 2
+                                     2 2 2 2 3 3 3 3
+                                     4 3 3 3 2 2 2 2
+                                     2 2 2 2 3 3 3 3]
+                                     2 2 2 2 2 2 2 2
+                                     2 3 2 3 2 3 2 3
+                                     3 3 3 3 3 3 3 3
+                                     1 1 1 1 1 1 1 1
+                                     2 1 1 1 1 1 1 1
+                                     2 1 1 2 1 2 2 1
+                                     2 2 2 4 2 4 2 4
+                                     4 3 4 3 4 3 4 3]))
+
 (def playBuffer_ops (buffer 128))
+; Tällä alkaa
 (buffer-write! playBuffer_ops [4 4 4 4 4 4 4 4
                                4 4 4 4 4 4 4 4
                                4 4 4 4 4 4 4 4
@@ -220,7 +230,63 @@
                                2 2 2 2 2 2 2 2
                                4 4 4 4 4 4 4 4])
 
+
+; hapsiaisen taakse tulee tietoisku1
+(buffer-write! playBuffer_ops [3 3 3 3 3 3 3 3
+                               3 3 3 3 3 3 3 3
+                               4 4 4 4 4 4 4 4
+                               4 4 4 4 4 4 4 4
+                               4 4 4 4 4 4 4 4
+                               4 4 4 4 4 4 4 4
+                               3 3 3 3 3 3 3 3
+                               3 3 3 3 3 3 3 3
+                               2 2 2 2 2 2 2 2
+                               2 2 2 2 2 2 2 2
+                               2 2 2 2 2 2 2 2
+                               2 2 2 2 2 2 2 2
+                               1 1 1 1 1 1 1 1
+                               1 1 1 1 1 1 1 1
+                               1 1 1 1 1 1 1 1
+                               1 1 1 1 1 1 1 1])
+
 (def playBuffer_kick (buffer 128))
+
+(buffer-write! playBuffer_kick [1 0 0 0 0 0 0 0
+                               0 0 0 0 0 0 0 0
+                               1 0 0 0 0 0 0 0
+                               0 0 0 0 0 0 0 0
+                               1 0 0 0 0 0 0 0
+                               0 0 0 0 0 0 0 0
+                               1 0 0 0 0 0 0 0
+                               0 0 0 0 0 0 0 0
+                               1 0 0 0 0 0 0 0
+                               0 0 0 0 0 0 0 0
+                               1 0 0 0 0 0 0 0
+                               1 0 1 0 1 0 1 0
+                               1 0 0 0 0 0 0 0
+                               1 0 0 0 1 0 0 0
+                               1 0 0 0 1 0 0 0
+                               0 0 0 0 1 0 0 0])
+
+
+(buffer-write! playBuffer_kick [1 0 1 0 1 0 1 0
+                               1 0 1 0 1 0 1 0
+                               1 0 1 0 1 0 1 0
+                               1 0 1 0 1 0 1 0
+                               1 0 1 0 1 0 1 0
+                               1 0 1 0 1 0 1 0
+                               1 0 1 0 1 0 1 0
+                               1 0 1 0 1 0 1 0
+                               1 0 1 0 1 0 1 0
+                               1 0 1 0 1 0 1 0
+                               1 0 1 0 1 0 1 0
+                               1 0 1 0 1 0 1 0
+                               1 0 1 0 1 0 1 0
+                               1 0 1 0 1 0 1 0
+                               1 0 1 0 1 0 1 0
+                               1 0 1 0 1 0 1 0])
+
+
 (buffer-write! playBuffer_kick [1 0 0 0 1 0 0 0
                                1 0 0 0 1 0 0 0
                                1 0 0 0 1 0 0 0
@@ -270,8 +336,8 @@
                                0 0 0 0 0 0 0 0
                                1 0 0 0 0 0 0 0
                                0 0 0 0 0 0 0 0
-                               1 0 0 0 1 0 0 0
-                               0 0 1 0 1 0 0 0])
+                               1 0 0 0 0 0 0 0
+                               0 0 0 0 0 0 0 0])
 
 
                                         ;buffer modifiers
@@ -281,8 +347,6 @@
 (def modValArray (writeBuffer pointBuffer (setADSR modValArray 0.01 0.3 0.99 0.1 4)))
 
 (def modValArray (writeBuffer pointBuffer (setAmp modValArray 1 3)))
-
-(def pointbuf2 (makeBuffer 10))
 
 (def modValArray (writeBuffer pointBuffer (setPoint modValArray [1 200 334 455 576 0.01 0.3 0.99 0.01 1] 3)))
 
@@ -313,16 +377,25 @@
                                         ; reader for mcsynth
 (def mcsr (playReader :play-buf playBuffer :point-buf pointBuffer :in-bus-ctr b4th_beat-cnt-bus :outbus mcbus1))
 
+
+;Tämä hapsiaisen kanssa
 (ctl mcsr :point-buf pointBuffer :play-buf buffer-64-1 :in-bus-ctr b8th_beat-cnt-bus)
 
+;Tämä kunhan alkaa tulla hapsiaista ja sormileikkiä
 (ctl mcsr :point-buf pointBuffer :play-buf playBuffer :in-bus-ctr b4th_beat-cnt-bus)
 
 (kill mcsr)
 
                                         ;reader for overpad
-(def opsr (playReader :play-buf playBuffer_ops :point-buf pointBuffer :in-bus-ctr b32th_beat-cnt-bus :outbus mcbus2))
+;Homma alkaa overpadilla
+(def opsr (playReader :play-buf playBuffer_ops :point-buf pointBuffer :in-bus-ctr 8th_beat-cnt-bus :outbus mcbus2))
 
-(ctl opsr :play-buf playBuffer_ops :in-bus-ctr b32th_beat-cnt-bus)
+;alkaa tällä
+(ctl opsr :play-buf playBuffer_ops :in-bus-ctr b8th_beat-cnt-bus)
+
+
+(ctl opsr :play-buf playBuffer_ops :in-bus-ctr b8th_beat-cnt-bus)
+
 
 (control-bus-set! master-rate-bus (* 2 36))
 
@@ -378,23 +451,21 @@
           s1         (* osc1-level (select osc1 osc-bank-1))
           s2         (* osc2-level (select osc2 osc-bank-2))
           s3         (* osc3-level (select osc3 osc-bank-3))
-          filt       (moog-ff (+ s1 s2 s3) (* cutoff f-env2) 3)
-          filt       (free-verb filt f-env2 1 1)
+          filt       (moog-ff (+ s1 s2 s3) (* cutoff 1) 3)
+          filt       (free-verb filt f-env2 1.0 1)
           fout       (select:kr (= gate 0.0) [freq1 (in:kr ctrl-output)])
           _          (out:kr ctrl-output fout)
           ]
       (out 0 (pan2 (* amp amp-env filt)))))
 
 (do (kill mcs1)
-    (def mcs1 (mcsynth [:tail early-g]  :control-bus mcbus1 :amp 1 :osc1 2 :osc2 0 :ctrl-output vcbus1))
+    (def mcs1 (mcsynth [:tail early-g]  :control-bus mcbus1 :amp 0.5 :osc1 2 :osc2 0 :ctrl-output vcbus1))
 
     )
 
 (control-bus-get vcbus1)
 
-(ctl root-trg)
-
-(ctl mcs1 :amp 1 :osc1 0 :osc2 2 :cutoff 500 :ctrl-output vcbus1)
+(ctl mcs1 :amp 1 :osc1 0 :osc2 2 :cutoff 700 :ctrl-output vcbus1 :amp 0.6)
 
 (kill mcs1)
 
@@ -423,15 +494,15 @@
     (out outbus (pan2 audio))))
 
 (do (kill op)
-    (def op (overpad  [:tail early-g] :control-bus mcbus2 :ctrl-output vcbus2 :amp 0.3))
+    (def op (overpad  [:tail early-g] :control-bus mcbus2 :ctrl-output vcbus2 :amp 0.1))
 
     )
 
 
-(ctl op :amp 0.3)
+(ctl op :amp 0.075)
 (kill op)
 
-(control-bus-get mcbus2)
+(control-bus-get vcbus2)
 
 (pp-node-tree)
 
@@ -477,7 +548,9 @@
           venv      (a2k env)
           _         (out:kr video-control-bus venv)
           output    (*  amp (+ cutoff sound) env)
-          output    (free-verb output 0.1 0.3 0.1)]
+          output    (free-verb output 0.1 0.3 0.1)
+          ;output    (breakcore 0 0 0 0.5)
+          ]
       (out outbus (pan2 (* amp_output (clip:ar output clipVal))))))
 
 
@@ -489,8 +562,8 @@
 (ctl k1 :amp 1 :control-bus mcbus3 :video-control-bus vcbus3
      :v1 0.001 :v2 0.01 :v3 0.01
      :d1 1 :d2 10 :d3 1
-     :f1 30 :f2 5 :f3 50
-     :c1 -20 :c2 -8 :c3 -8 )
+     :f1 50 :f2 5 :f3 40
+     :c1 -20 :c2 -8 :c3 -18 )
 
 (stop)
 
@@ -514,6 +587,8 @@
                                       ;(t/set-dataArray-item 0 (+ (nth (control-bus-get vcbus1) 0) 0.01) )
 
                                       ))
+
+(control-bus-get vcbus1)
 
 (t/set-dataArray-item 51 0)
 
