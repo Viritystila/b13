@@ -161,7 +161,7 @@
                              2 2 2 2 2 2 2 2
                              2 2 2 2 2 2 2 2
                              2 2 2 2 2 2 2 2
-                             2 2 2 2 4 3 4 3])
+                             2 2 2 2 2 2 2 2])
 
 
                                         ; single pulse point
@@ -190,6 +190,23 @@
                            2 0 2 0 2 0 2 0
                            2 0 2 0 2 0 2 0
                            2 0 2 0 2 0 2 0
+                           2 0 2 0 2 0 2 0
+                           4 0 3 0 4 0 3 0])
+;vaihtelua
+(buffer-write! playBuffer [4 4 4 4 4 4 4 4
+                           4 4 4 4 4 4 4 4
+                           4 4 4 4 4 4 4 4
+                           1 1 1 1 1 1 1 1
+                           2 2 2 2 2 2 2 2
+                           2 2 2 2 2 2 2 2
+                           3 3 3 3 3 0 3 0
+                           3 0 3 3 3 3 3 3
+                           2 2 2 2 2 0 2 0
+                           2 0 2 0 2 2 2 2
+                           2 2 2 2 2 0 2 0
+                           2 0 2 0 2 2 2 2
+                           2 2 2 2 2 0 2 0
+                           2 0 2 0 2 2 2 2
                            2 0 2 0 2 0 2 0
                            4 0 3 0 4 0 3 0])
 
@@ -249,6 +266,24 @@
                                1 1 1 1 1 1 1 1
                                1 1 1 1 1 1 1 1])
 
+;vaihtelua
+(buffer-write! playBuffer_ops [4 3 4 3 4 3 4 3
+                               4 3 4 3 4 3 4 3
+                               4 3 4 3 4 3 4 3
+                               4 3 4 3 4 3 4 3
+                               4 3 4 3 4 3 4 3
+                               4 3 4 3 4 3 4 3
+                               2 4 2 4 2 4 2 4
+                               2 4 2 4 2 4 2 4
+                               2 4 2 4 2 4 2 4
+                               2 4 2 4 2 4 2 4
+                               1 3 1 3 1 3 1 3
+                               1 3 1 3 1 3 1 3
+                               1 3 1 3 1 3 1 3
+                               1 3 1 3 1 3 1 3
+                               2 3 2 3 2 3 2 3
+                               2 3 2 3 2 3 2 3])
+
 (def playBuffer_kick (buffer 128))
 
 (buffer-write! playBuffer_kick [1 0 0 0 0 0 0 0
@@ -261,11 +296,11 @@
                                0 0 0 0 0 0 0 0
                                1 0 0 0 0 0 0 0
                                0 0 0 0 0 0 0 0
-                               1 0 0 0 0 0 0 0
+                               1 0 0 0 1 0 0 0
+                               1 0 1 0 0 0 0 0
+                               1 0 1 0 1 0 1 0
                                1 0 1 0 1 0 1 0
                                1 0 0 0 0 0 0 0
-                               1 0 0 0 1 0 0 0
-                               1 0 0 0 1 0 0 0
                                0 0 0 0 1 0 0 0])
 
 
@@ -318,7 +353,7 @@
                                1 0 0 0 0 0 0 0
                                1 0 0 0 0 0 0 0
                                1 0 0 0 0 0 0 0
-                               1 0 0 0 0 0 0 0
+                               1 0 1 0 0 1 0 0
                                1 0 0 0 1 0 0 0])
 
 
@@ -382,18 +417,22 @@
 (ctl mcsr :point-buf pointBuffer :play-buf buffer-64-1 :in-bus-ctr b8th_beat-cnt-bus)
 
 ;Tämä kunhan alkaa tulla hapsiaista ja sormileikkiä
-(ctl mcsr :point-buf pointBuffer :play-buf playBuffer :in-bus-ctr b4th_beat-cnt-bus)
+(ctl mcsr :point-buf pointBuffer :play-buf playBuffer :in-bus-ctr b8th_beat-cnt-bus)
+
+(ctl mcsr :point-buf pointBuffer :play-buf playBuffer_ops :in-bus-ctr b32th_beat-cnt-bus)
+
 
 (kill mcsr)
 
                                         ;reader for overpad
 ;Homma alkaa overpadilla
-(def opsr (playReader :play-buf playBuffer_ops :point-buf pointBuffer :in-bus-ctr 8th_beat-cnt-bus :outbus mcbus2))
+(def opsr (playReader :play-buf playBuffer_ops :point-buf pointBuffer :in-bus-ctr b16th_beat-cnt-bus :outbus mcbus2))
 
 ;alkaa tällä
-(ctl opsr :play-buf playBuffer_ops :in-bus-ctr b8th_beat-cnt-bus)
+(ctl opsr :play-buf playBuffer_ops :in-bus-ctr b32th_beat-cnt-bus)
 
 
+;vähän vaihtelua tempolla
 (ctl opsr :play-buf playBuffer_ops :in-bus-ctr b8th_beat-cnt-bus)
 
 
@@ -402,8 +441,9 @@
 
                                         ;Reader for kick drum
 
-(def kickr (playReader :play-buf playBuffer_kick :point-buf pointBuffer :in-bus-ctr b4th_beat-cnt-bus :outbus mcbus3))
+(def kickr (playReader :play-buf playBuffer_kick :point-buf pointBuffer :in-bus-ctr b8th_beat-cnt-bus :outbus mcbus3))
 
+(kill kickr)
 
 (stop)
                                         ;Synths
@@ -465,7 +505,7 @@
 
 (control-bus-get vcbus1)
 
-(ctl mcs1 :amp 1 :osc1 0 :osc2 2 :cutoff 700 :ctrl-output vcbus1 :amp 0.6)
+(ctl mcs1 :amp 1 :osc1 0 :osc2 0 :osc3 0 :cutoff 400 :ctrl-output vcbus1 :amp 0.26)
 
 (kill mcs1)
 
@@ -560,10 +600,10 @@
     )
 
 (ctl k1 :amp 1 :control-bus mcbus3 :video-control-bus vcbus3
-     :v1 0.001 :v2 0.01 :v3 0.01
+     :v1 0.01 :v2 0.01 :v3 0.01
      :d1 1 :d2 10 :d3 1
      :f1 50 :f2 5 :f3 40
-     :c1 -20 :c2 -8 :c3 -18 )
+     :c1 -20 :c2 -18 :c3 -18 )
 
 (stop)
 
