@@ -167,12 +167,13 @@
                                         ; single pulse point
 ; p=[gate, f1, f2, f3, f4, a, d, s, r, amp]
                                         ;Collection of points
-(def pointBuffer (buffer (* 5 pointLength)))
-(def modValArray (writeBuffer pointBuffer (flatten [0 0 0 0 0 0 0 0 0 0
-                                                    1 (into [] (map note->hz (chord :C3 :minor))) 1 0.01 0.003 0.99 0.01 1
-                                                    1 (into [] (map note->hz (chord :D3 :minor))) 1 0.01 0.003 0.99 0.01 1
-                                                    1 (into [] (map note->hz (chord :G3 :minor))) 1 0.01 0.003 0.99 0.01 1
-                                                    1 (into [] (map note->hz (chord :Bb3 :minor))) 1 0.01 0.003 0.99 0.01 1])))
+(do
+  (def pointBuffer (buffer (* 5 pointLength)))
+  (def modValArray (writeBuffer pointBuffer (flatten [0 0 0 0 0 0 0 0 0 0
+                                                      1 (into [] (map note->hz (chord :C3 :minor))) 1 0.01 0.003 0.99 0.01 1
+                                                      1 (into [] (map note->hz (chord :D3 :minor))) 1 0.01 0.003 0.99 0.01 1
+                                                      1 (into [] (map note->hz (chord :G3 :minor))) 1 0.01 0.003 0.99 0.01 1
+                                                      1 (into [] (map note->hz (chord :Bb3 :minor))) 1 0.01 0.003 0.99 0.01 1]))))
 
 
 (def playBuffer (buffer 128))
@@ -192,6 +193,7 @@
                            2 0 2 0 2 0 2 0
                            2 0 2 0 2 0 2 0
                            4 0 3 0 4 0 3 0])
+
 ;vaihtelua
 (buffer-write! playBuffer [4 4 4 4 4 4 4 4
                            4 4 4 4 4 4 4 4
@@ -229,6 +231,7 @@
                                      4 3 4 3 4 3 4 3]))
 
 (def playBuffer_ops (buffer 128))
+
 ; Tällä alkaa
 (buffer-write! playBuffer_ops [4 4 4 4 4 4 4 4
                                4 4 4 4 4 4 4 4
@@ -236,6 +239,7 @@
                                4 4 4 4 4 4 4 4
                                4 4 4 4 4 4 4 4
                                4 4 4 4 4 4 4 4
+                               4 4 4 4 4 4 4 4
                                3 3 3 3 3 3 3 3
                                3 3 3 3 3 3 3 3
                                2 2 2 2 2 2 2 2
@@ -244,8 +248,7 @@
                                2 2 2 2 2 2 2 2
                                2 2 2 2 2 2 2 2
                                2 2 2 2 2 2 2 2
-                               2 2 2 2 2 2 2 2
-                               4 4 4 4 4 4 4 4])
+                               2 2 2 2 2 2 2 2])
 
 
 ; hapsiaisen taakse tulee tietoisku1
@@ -259,8 +262,8 @@
                                3 3 3 3 3 3 3 3
                                2 2 2 2 2 2 2 2
                                2 2 2 2 2 2 2 2
-                               2 2 2 2 2 2 2 2
-                               2 2 2 2 2 2 2 2
+                               3 3 3 3 3 3 3 3
+                               3 3 3 3 3 3 3 3
                                1 1 1 1 1 1 1 1
                                1 1 1 1 1 1 1 1
                                1 1 1 1 1 1 1 1
@@ -275,12 +278,12 @@
                                4 3 4 3 4 3 4 3
                                2 4 2 4 2 4 2 4
                                2 4 2 4 2 4 2 4
-                               2 4 2 4 2 4 2 4
-                               2 4 2 4 2 4 2 4
                                1 3 1 3 1 3 1 3
                                1 3 1 3 1 3 1 3
                                1 3 1 3 1 3 1 3
                                1 3 1 3 1 3 1 3
+                               2 3 2 3 2 3 2 3
+                               2 3 2 3 2 3 2 3
                                2 3 2 3 2 3 2 3
                                2 3 2 3 2 3 2 3])
 
@@ -410,7 +413,7 @@
 
 
                                         ; reader for mcsynth
-(def mcsr (playReader :play-buf playBuffer :point-buf pointBuffer :in-bus-ctr b4th_beat-cnt-bus :outbus mcbus1))
+(def mcsr (playReader :play-buf playBuffer :point-buf pointBuffer :in-bus-ctr b8th_beat-cnt-bus :outbus mcbus1))
 
 
 ;Tämä hapsiaisen kanssa
@@ -429,11 +432,11 @@
 (def opsr (playReader :play-buf playBuffer_ops :point-buf pointBuffer :in-bus-ctr b16th_beat-cnt-bus :outbus mcbus2))
 
 ;alkaa tällä
-(ctl opsr :play-buf playBuffer_ops :in-bus-ctr b32th_beat-cnt-bus)
+(ctl opsr :play-buf playBuffer_ops :in-bus-ctr b16th_beat-cnt-bus)
 
 
 ;vähän vaihtelua tempolla
-(ctl opsr :play-buf playBuffer_ops :in-bus-ctr b8th_beat-cnt-bus)
+(ctl opsr :play-buf playBuffer_ops :in-bus-ctr b16th_beat-cnt-bus)
 
 
 (control-bus-set! master-rate-bus (* 2 36))
@@ -505,9 +508,14 @@
 
 (control-bus-get vcbus1)
 
-(ctl mcs1 :amp 1 :osc1 0 :osc2 0 :osc3 0 :cutoff 400 :ctrl-output vcbus1 :amp 0.26)
+(ctl mcs1 :amp 1 :osc1 0 :osc2 0 :osc3 0 :cutoff 400 :ctrl-output vcbus1 :amp 0.5)
+
+(ctl mcs1 :amp 1 :osc1 0 :osc2 0 :osc3 2 :cutoff 200 :ctrl-output vcbus1 :amp 0.5)
+
 
 (kill mcs1)
+
+(kill 60)
 
 (pp-node-tree)
                                         ;overpad
@@ -522,12 +530,12 @@
         r     (select:kr 8 control_in)
         noise (pink-noise)
         env    (env-gen (adsr a d s r) :gate gate)
-        f-env (+ freq (* 30 freq (env-gen (perc 0.012 (- r 0.1)))))
+        f-env (+ freq (* 30 freq (env-gen (perc 30.012 (- r 0.1)))))
         bfreq (/ freq 2)
         sig   (apply +
                      (concat (* 0.7 (saw [bfreq (* 0.99 bfreq)]))
                              (lpf (saw [freq (* noise freq 1.01)]) f-env)))
-        ctrl-out (a2k sig)
+        ctrl-out (a2k (* env sig))
         _        (out:kr ctrl-output ctrl-out)
         audio (* amp env sig)
         ]
@@ -539,7 +547,7 @@
     )
 
 
-(ctl op :amp 0.075)
+(ctl op :amp 0.01)
 (kill op)
 
 (control-bus-get vcbus2)
@@ -604,6 +612,15 @@
      :d1 1 :d2 10 :d3 1
      :f1 50 :f2 5 :f3 40
      :c1 -20 :c2 -18 :c3 -18 )
+
+(ctl k1 :amp 1 :control-bus mcbus3 :video-control-bus vcbus3
+     :v1 0.01 :v2 0.001 :v3 0.001
+     :d1 1 :d2 1 :d3 1
+     :f1 50 :f2 5 :f3 40
+     :c1 -20 :c2 -8 :c3 -8 )
+
+
+(ctl k1 :amp 0.5)
 
 (stop)
 
