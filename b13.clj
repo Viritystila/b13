@@ -1,5 +1,10 @@
 (ns b13 (:use [overtone.live]) (:require [viritystone.tone :as t]) )
 
+;(defsynth aaa []  (out 0 (sin-osc 100)))
+
+;(def aa (aaa))
+
+;(kill aa)
 
 (do
   (do
@@ -359,6 +364,24 @@
                                1 0 1 0 0 1 0 0
                                1 0 0 0 1 0 0 0])
 
+(buffer-write! playBuffer_kick [1 0 0 0 1 0 0 0
+                               1 0 0 0 1 0 0 0
+                               1 0 1 0 0 0 1 0
+                               1 0 0 0 1 0 0 0
+                               1 0 0 0 1 0 0 0
+                               1 0 0 0 1 0 0 0
+                               1 0 0 0 0 0 0 0
+                               1 0 0 0 1 0 0 0
+                               1 0 1 0 1 0 0 0
+                               1 0 1 0 0 0 0 0
+                               1 0 0 0 1 0 0 0
+                               1 0 0 0 1 0 0 0
+                               1 0 0 0 1 0 0 0
+                               1 0 0 0 1 0 0 0
+                               1 0 1 0 1 1 0 0
+                               1 0 0 0 1 0 0 0])
+
+
 
 (buffer-write! playBuffer_kick [1 0 0 0 0 0 0 0
                                0 0 0 0 0 0 0 0
@@ -422,7 +445,7 @@
 ;Tämä kunhan alkaa tulla hapsiaista ja sormileikkiä
 (ctl mcsr :point-buf pointBuffer :play-buf playBuffer :in-bus-ctr b8th_beat-cnt-bus)
 
-(ctl mcsr :point-buf pointBuffer :play-buf playBuffer_ops :in-bus-ctr b32th_beat-cnt-bus)
+(ctl mcsr :point-buf pointBuffer :play-buf playBuffer_ops :in-bus-ctr b4th_beat-cnt-bus)
 
 
 (kill mcsr)
@@ -432,11 +455,11 @@
 (def opsr (playReader :play-buf playBuffer_ops :point-buf pointBuffer :in-bus-ctr b16th_beat-cnt-bus :outbus mcbus2))
 
 ;alkaa tällä
-(ctl opsr :play-buf playBuffer_ops :in-bus-ctr b16th_beat-cnt-bus)
+(ctl opsr :play-buf playBuffer_ops :in-bus-ctr b8th_beat-cnt-bus)
 
 
 ;vähän vaihtelua tempolla
-(ctl opsr :play-buf playBuffer_ops :in-bus-ctr b16th_beat-cnt-bus)
+(ctl opsr :play-buf playBuffer_ops :in-bus-ctr b4th_beat-cnt-bus)
 
 
 (control-bus-set! master-rate-bus (* 2 36))
@@ -506,13 +529,15 @@
 
     )
 
-(control-bus-get vcbus1)
-
-(ctl mcs1 :amp 1 :osc1 0 :osc2 0 :osc3 0 :cutoff 400 :ctrl-output vcbus1 :amp 0.5)
-
-(ctl mcs1 :amp 1 :osc1 0 :osc2 0 :osc3 2 :cutoff 200 :ctrl-output vcbus1 :amp 0.5)
+(control-bus-get mcbus1)
 
 
+(ctl mcs1 :amp 1 :osc1 0 :osc2 0 :osc3 0 :cutoff 800 :ctrl-output vcbus1 :amp 1)
+
+(ctl mcs1 :amp 1 :osc1 0 :osc2 0 :osc3 2 :cutoff 200 :ctrl-output vcbus1 :amp 1)
+
+
+(ctl mcs1 :amp 0.5)
 (kill mcs1)
 
 (kill 60)
@@ -542,15 +567,16 @@
     (out outbus (pan2 audio))))
 
 (do (kill op)
-    (def op (overpad  [:tail early-g] :control-bus mcbus2 :ctrl-output vcbus2 :amp 0.1))
+    (def op (overpad  [:tail early-g] :control-bus mcbus2 :ctrl-output vcbus2 :amp 1))
 
     )
 
 
 (ctl op :amp 0.01)
+
 (kill op)
 
-(control-bus-get vcbus2)
+(control-bus-get mcbus2)
 
 (pp-node-tree)
 
@@ -620,7 +646,7 @@
      :c1 -20 :c2 -8 :c3 -8 )
 
 
-(ctl k1 :amp 0.5)
+(ctl k1 :amp 0.015)
 
 (stop)
 
