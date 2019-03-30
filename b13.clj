@@ -175,10 +175,22 @@
 (do
   (def pointBuffer (buffer (* 5 pointLength)))
   (def modValArray (writeBuffer pointBuffer (flatten [0 0 0 0 0 0 0 0 0 0
-                                                      1 (into [] (map note->hz (chord :C3 :minor))) 1 0.01 0.003 0.99 0.01 1
-                                                      1 (into [] (map note->hz (chord :D3 :minor))) 1 0.01 0.003 0.99 0.01 1
-                                                      1 (into [] (map note->hz (chord :G3 :minor))) 1 0.01 0.003 0.99 0.01 1
-                                                      1 (into [] (map note->hz (chord :Bb3 :minor))) 1 0.01 0.003 0.99 0.01 1]))))
+                                                      1 (into [] (map note->hz (chord :C3 :minor))) 1 0.01 0.003 0.99 10.1 1
+                                                      1 (into [] (map note->hz (chord :D3 :minor))) 1 0.01 0.003 0.99 10.1 1
+                                                      1 (into [] (map note->hz (chord :G3 :minor))) 1 0.01 0.003 0.99 10.1 1
+                                                      1 (into [] (map note->hz (chord :Bb3 :minor))) 1 0.01 0.003 0.99 10.1 1])))
+
+  )
+
+(do
+  (def pointBuffer_major (buffer (* 5 pointLength)))
+  (def modValArray (writeBuffer pointBuffer_major (flatten [0 0 0 0 0 0 0 0 0 0
+                                                      1 (into [] (map note->hz (chord :C3 :major))) 1 0.01 0.003 0.99 0.01 1
+                                                      1 (into [] (map note->hz (chord :D3 :major))) 1 0.01 0.003 0.99 0.01 1
+                                                      1 (into [] (map note->hz (chord :G3 :major))) 1 0.01 0.003 0.99 0.01 1
+                                                      1 (into [] (map note->hz (chord :Bb3 :major))) 1 0.01 0.003 0.99 0.01 1])))
+
+  )
 
 
 (def playBuffer (buffer 128))
@@ -215,7 +227,7 @@
                            2 2 2 2 2 0 2 0
                            2 0 2 0 2 2 2 2
                            2 0 2 0 2 0 2 0
-                           4 0 3 0 4 0 3 0])
+                           4 0 4 0 4 0 4 0])
 
 
 (buffer-write! playBuffer (flatten [[4 4 4 4 2 2 2 2
@@ -253,7 +265,7 @@
                                2 2 2 2 2 2 2 2
                                2 2 2 2 2 2 2 2
                                2 2 2 2 2 2 2 2
-                               2 2 2 2 2 2 2 2])
+                               2 2 2 2 1 3 4 3])
 
 
 ; hapsiaisen taakse tulee tietoisku1
@@ -370,15 +382,15 @@
                                1 0 0 0 1 0 0 0
                                1 0 0 0 1 0 0 0
                                1 0 0 0 1 0 0 0
-                               1 0 0 0 0 0 0 0
+                               1 0 1 0 1 0 1 0
                                1 0 0 0 1 0 0 0
                                1 0 1 0 1 0 0 0
-                               1 0 1 0 0 0 0 0
+                               1 0 1 0 1 0 1 0
                                1 0 0 0 1 0 0 0
                                1 0 0 0 1 0 0 0
                                1 0 0 0 1 0 0 0
                                1 0 0 0 1 0 0 0
-                               1 0 1 0 1 1 0 0
+                               1 0 1 0 1 0 1 0
                                1 0 0 0 1 0 0 0])
 
 
@@ -399,6 +411,23 @@
                                0 0 0 0 0 0 0 0
                                1 0 0 0 0 0 0 0
                                0 0 0 0 0 0 0 0])
+
+(buffer-write! playBuffer_kick [1 0 0 0 0 0 0 0
+                               0 0 0 0 0 0 0 0
+                               0 0 0 0 0 0 0 0
+                               0 0 0 0 0 0 0 0
+                               0 0 0 0 0 0 0 0
+                               0 0 0 0 0 0 0 0
+                               0 0 0 0 0 0 0 0
+                               0 0 0 0 0 0 0 0
+                               0 0 0 0 0 0 0 0
+                               0 0 0 0 0 0 0 0
+                               0 0 0 0 0 0 0 0
+                               0 0 0 0 0 0 0 0
+                               0 0 0 0 0 0 0 0
+                               1 0 0 0 1 0 0 0
+                               1 0 0 0 0 0 1 0
+                               0 0 0 0 1 0 0 0])
 
 
                                         ;buffer modifiers
@@ -445,7 +474,7 @@
 ;Tämä kunhan alkaa tulla hapsiaista ja sormileikkiä
 (ctl mcsr :point-buf pointBuffer :play-buf playBuffer :in-bus-ctr b8th_beat-cnt-bus)
 
-(ctl mcsr :point-buf pointBuffer :play-buf playBuffer_ops :in-bus-ctr b4th_beat-cnt-bus)
+(ctl mcsr :point-buf pointBuffer :play-buf playBuffer :in-bus-ctr b8th_beat-cnt-bus)
 
 
 (kill mcsr)
@@ -455,7 +484,7 @@
 (def opsr (playReader :play-buf playBuffer_ops :point-buf pointBuffer :in-bus-ctr b16th_beat-cnt-bus :outbus mcbus2))
 
 ;alkaa tällä
-(ctl opsr :play-buf playBuffer_ops :in-bus-ctr b8th_beat-cnt-bus)
+(ctl opsr :point-buf pointBuffer :play-buf playBuffer_ops :in-bus-ctr b16th_beat-cnt-bus)
 
 
 ;vähän vaihtelua tempolla
@@ -532,19 +561,19 @@
 (control-bus-get mcbus1)
 
 
-(ctl mcs1 :amp 1 :osc1 0 :osc2 0 :osc3 0 :cutoff 800 :ctrl-output vcbus1 :amp 1)
+(ctl mcs1 :amp 1 :osc1 0 :osc2 1 :osc3 2 :cutoff 1800 :ctrl-output vcbus1 :amp 1)
 
 (ctl mcs1 :amp 1 :osc1 0 :osc2 0 :osc3 2 :cutoff 200 :ctrl-output vcbus1 :amp 1)
 
 
-(ctl mcs1 :amp 0.5)
+(ctl mcs1 :amp 0.013)
 (kill mcs1)
 
 (kill 60)
 
 (pp-node-tree)
                                         ;overpad
-(definst overpad
+(defsynth overpad
   [control-bus 0 note 30 amp 0.5 outbus 0 ctrl-output 0]
   (let [control_in   (in:kr control-bus 10)
         gate  (select:kr 0 control_in)
@@ -555,7 +584,7 @@
         r     (select:kr 8 control_in)
         noise (pink-noise)
         env    (env-gen (adsr a d s r) :gate gate)
-        f-env (+ freq (* 30 freq (env-gen (perc 30.012 (- r 0.1)))))
+        f-env (+ freq (* 30 freq (env-gen (perc 60.012 (- r 0.1)))))
         bfreq (/ freq 2)
         sig   (apply +
                      (concat (* 0.7 (saw [bfreq (* 0.99 bfreq)]))
@@ -567,7 +596,7 @@
     (out outbus (pan2 audio))))
 
 (do (kill op)
-    (def op (overpad  [:tail early-g] :control-bus mcbus2 :ctrl-output vcbus2 :amp 1))
+    (def op (overpad  [:tail early-g] :control-bus mcbus2 :ctrl-output vcbus2 :amp 0.1))
 
     )
 
@@ -629,7 +658,7 @@
 
 
 (do (kill k1)
-    (def k1 (kick :control-bus mcbus3))
+    (def k1 (kick :control-bus mcbus3 :amp 0))
 
     )
 
@@ -646,13 +675,14 @@
      :c1 -20 :c2 -8 :c3 -8 )
 
 
-(ctl k1 :amp 0.015)
+(ctl k1 :amp 0.124)
 
 (stop)
 
+(pp-node-tree)
 
                                         ;Video
-(t/start "./b13.glsl" :width 1920 :height 1080 :cams [0 2] :videos ["../videos/tietoisku_1_fixed.mp4" "../videos/spede_fixed.mp4"  "../videos/vt2.mp4" "../videos/hapsiainen_fixed.mp4" "../videos/sormileikit.mp4"])
+(t/start "./b13.glsl" :width 640 :height 480 :cams [0 1] :videos ["../videos/tietoisku_1_fixed.mp4" "../videos/spede_fixed.mp4"  "../videos/vt2.mp4" "../videos/hapsiainen_fixed.mp4" "../videos/sormileikit.mp4"])
 
 
 
@@ -673,16 +703,17 @@
 
 (control-bus-get vcbus1)
 
-(t/set-dataArray-item 51 0)
-
+(t/set-dataArray-item 2 10)
 
 (do
-                                        ;sepede 51000
+                                        ;sepede 51000, 51700
   (t/bufferSection 1 0 51000)
 
   (t/set-active-buffer-video 1 0)
 
   (t/set-video-fixed 1 :fw)
+
+  (t/set-video-fps 2 10)
 
   )
 
